@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include "QDialog"
 #include "ctunes.h"
+#include "InvalidRateException.h"
 
 
 
@@ -130,17 +131,43 @@ void MainWindow::on_add_Button_2_clicked()
 
     QString nombre = ui->lineEdit_nombre->text();
     QString cantante = ui->lineEdit_Artista->text();
-    QString genero = ui->lineEdit_genero->text();
+    QString generoString = ui->comboBox_genero->currentText();
+    Genero::Generos generoEnum;
 
+    // Convertir el QString a std::string
+    std::string generoStdString = generoString.toStdString();
+
+    // Convertir el std::string a Genero::Generos
+    if (generoStdString == "POP") {
+        generoEnum = Genero::POP;
+    } else if (generoStdString == "ROCK") {
+        generoEnum = Genero::ROCK;
+    } else if (generoStdString == "RAP") {
+        generoEnum = Genero::RAP;
+    } else if (generoStdString == "DANCE") {
+        generoEnum = Genero::DANCE;
+    } else if (generoStdString == "REGGAE") {
+        generoEnum = Genero::REGGAE;
+    } else if (generoStdString == "ELECTRONICA") {
+        generoEnum = Genero::ELECTRONICA;
+    } else if (generoStdString == "RANCHERA") {
+        generoEnum = Genero::RANCHERA;
+    }
     double precio = ui->lineEdit_precio->text().toDouble();
     QString duracion = ui->lineEdit_duracion->text();
 
 
 
 
-    ctunes.addSong(nombre.toStdString(), cantante.toStdString(), Genero::POP, precio, duracion.toStdString());
+    ctunes.addSong(nombre.toStdString(), cantante.toStdString(), generoEnum, precio, duracion.toStdString());
 
     QMessageBox::information(this, "Éxito", "Canción agregada correctamente.");
+    ui->lineEdit_codigo->setText("");
+    ui->lineEdit_nombre->setText("");
+    ui->lineEdit_Artista->setText("");
+    ui->lineEdit_precio->setText("");
+    ui->lineEdit_duracion->setText("");
+
 }
 
 
@@ -161,15 +188,18 @@ void MainWindow::on_review_Botton_clicked()
     } else if (ui->radioButton_5->isChecked()) {
         stars = 5;
     } else {
-
         QMessageBox::warning(this, "Error", "Por favor, seleccione una calificación.");
         return;
     }
 
     CTunes ctunes;
-    ctunes.reviewSong(code, stars);
-    QMessageBox::information(this, "Éxito", "La canción ha sido calificada correctamente.");
 
+    try {
+        ctunes.reviewSong(code, stars);
+        QMessageBox::information(this, "Éxito", "La canción ha sido calificada correctamente.");
+    } catch (InvalidRateException& e) {
+        QMessageBox::warning(this, "Error", "Código de canción inválido.");
+    }
 
 
 
@@ -200,5 +230,16 @@ void MainWindow::on_infoSong_Button_clicked()
     string message = ctunes.infoSong(code);
     QString clienteQString = QString::fromStdString(message);
     ui->textEdit_infoSong->setText(clienteQString);
+}
+
+
+void MainWindow::on_update_SButton_clicked()
+{
+    CTunes ctunes;
+
+    QString filename = ui->lineEdit_songs->text();
+    string message = ctunes.songs(filename.toStdString());
+    ui->TextEdit_song->setPlainText(QString::fromStdString(message));
+
 }
 

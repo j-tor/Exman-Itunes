@@ -22,6 +22,8 @@ public:
     QFile codigosFile;
     QFile downloadsFile;
     QFile songsFile;
+    Genero::Generos stringToGenero(const std::string& generoString);
+
 
 
 

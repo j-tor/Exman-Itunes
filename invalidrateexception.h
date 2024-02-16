@@ -4,11 +4,13 @@
 #include <stdexcept>
 #include <string>
 
-
+using namespace std;
 class InvalidRateException : public std::runtime_error {
 public:
-    InvalidRateException(int rate) : std::runtime_error("RATE " + std::to_string(rate) + " no es un numero valido") {}
+    InvalidRateException(int invalidRate)
+        : std::runtime_error("RATE " + std::to_string(invalidRate) + " is not a valid number for a review") {}
 
+    virtual ~InvalidRateException() noexcept {}
 };
 
 #endif // INVALIDRATEEXCEPTION_H

@@ -48,6 +48,8 @@ private slots:
 
     void on_infoSong_Button_clicked();
 
+    void on_update_SButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
