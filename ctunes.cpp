@@ -69,12 +69,6 @@ CTunes::CTunes() {
 
 }
 
-// Destructor
-/*CTunes::CTunes() {
-    codigosFile.close();
-    songsFile.close();
-    downloadsFile.close();
-}*/
 
 
 int CTunes::getcodigo(long offset) {
@@ -87,7 +81,7 @@ int CTunes::getcodigo(long offset) {
     }
 
         QDataStream codigosadd(&codigosFile);
-        codigosFile.seek(0);
+        //codigosFile.seek(offset);
         //int tempcodesong;
         //codigosadd >> tempcodesong;
 
@@ -97,46 +91,20 @@ int CTunes::getcodigo(long offset) {
         QDataStream codigosread(&codigosFile);
         codigosread <<suma;*/
 
-
-
-
        codigosFile.seek(offset);
         int tempo;
         codigosadd>>tempo;
         codigosFile.seek(offset);
-        int mas= tempo++;
+        int mas= tempo+1;
         codigosadd<<mas;
-        //return tempo;
 
-    return tempo;
+    return tempo++;
 
 }
 
-Genero::Generos CTunes::stringToGenero(const std::string& generoString) {
-    if (generoString == "Pop") {
-        return Genero::POP;
-    } else if (generoString == "Rock") {
-        return Genero::ROCK;
-    } else if (generoString == "Rap") {
-        return Genero::RAP;
-    } else if (generoString == "Dance") {
-        return Genero::DANCE;
-    } else if (generoString == "Reggae") {
-        return Genero::REGGAE;
-    } else if (generoString == "Electronica") {
-        return Genero::ELECTRONICA;
-    } else if (generoString == "Ranchera") {
-        return Genero::RANCHERA;
-    } else {
-        // Género desconocido, puedes manejar este caso como consideres necesario
-        // Por ejemplo, podrías lanzar una excepción o devolver un valor por defecto
-        throw std::invalid_argument("Género desconocido");
-    }
-}
+
 
 void CTunes::addSong(string nombre, string cantante, Genero::Generos generoCantante, double precio,string duracion) {
-    int stars = 0;
-    int reviews = 0;
 
     string genero;
     if (generoCantante == Genero::POP) {
@@ -158,7 +126,6 @@ void CTunes::addSong(string nombre, string cantante, Genero::Generos generoCanta
     getcodigo(0);
     int nextCode = getcodigo(0);
 
-    // Open the songs file to append the new song
     QFile songsFile("songs.itn");
     if (!songsFile.open(QIODevice::Append | QIODevice::Text)) {
         // Handle file open failure
@@ -166,7 +133,6 @@ void CTunes::addSong(string nombre, string cantante, Genero::Generos generoCanta
         throw std::runtime_error("Failed to open songs file.");
     }
 
-    // Create a structure to hold song details
     struct cancion newSong;
     newSong.code = nextCode;
     newSong.nombre = QString::fromStdString(nombre);
@@ -187,7 +153,6 @@ void CTunes::addSong(string nombre, string cantante, Genero::Generos generoCanta
     out << 0;
     out << 0;
 
-    // Close the file after use
     songsFile.close();
     } else {
         qDebug() << "Failed to seek to the end of the songs file.";
@@ -212,7 +177,6 @@ string CTunes::downloadSong(int codeSong, string cliente){
 
     songsFile.seek(0);
 
-    // Find the song with the given code
     while (!inSongs.atEnd()) {
         inSongs >> song.code >> song.nombre >> song.cantante >> song.genero >> song.precio >> song.estrellas >> song.reviews;
         if (song.code == codeSong) {
@@ -225,7 +189,6 @@ string CTunes::downloadSong(int codeSong, string cliente){
         return "Invalid code!! Song not found.";
     }
 
-    // Get the next available code for download
     getcodigo(4);
     int nextDownloadCode = getcodigo(4);
     if (nextDownloadCode == -1) {        
@@ -233,7 +196,6 @@ string CTunes::downloadSong(int codeSong, string cliente){
     }
 
 
-    // Create a new download record
     descarga newDownload;
     newDownload.codedown = nextDownloadCode;
     newDownload.fecha = QDateTime::currentDateTime().toString();
@@ -241,7 +203,6 @@ string CTunes::downloadSong(int codeSong, string cliente){
     newDownload.cliente = QString::fromStdString(cliente);
     newDownload.precio = song.precio;
 
-    // Write the download record to the downloads file
     outDownloads << newDownload.codedown << newDownload.fecha << newDownload.codesong << newDownload.cliente << newDownload.precio;
 
     songsFile.close();
@@ -252,86 +213,10 @@ string CTunes::downloadSong(int codeSong, string cliente){
     std::string formattedPrice = ss.str();
 
 
-
-
-
-    // Return the thank-you message as a std::string
     return "GRACIAS!! " + cliente + " por descargar " + song.nombre.toStdString() + " (Código de descarga: " + std::to_string(nextDownloadCode) +
            ", Fecha: " + newDownload.fecha.toStdString() + ", Código de canción: " + std::to_string(codeSong) +
            ") a un costo de Lps." + formattedPrice;}
 
-
-    string CTunes::infoSong(int codeSong) {
-
-        QFile songsFile("songs.itn");
-        QFile downloadsFile("downloads.itn");
-
-        if (!songsFile.open(QIODevice::ReadOnly) || !downloadsFile.open(QIODevice::ReadOnly)) {
-            return "Failed to open files.";
-        }
-
-        QDataStream inSongs(&songsFile);
-
-        bool songFound = false;
-        cancion song;
-        songsFile.seek(0);
-
-
-        // Find the song with the given code
-        while (!inSongs.atEnd()) {
-            inSongs >> song.code >> song.nombre >> song.cantante >> song.genero >> song.precio >> song.estrellas >> song.reviews;
-
-            if (song.code == codeSong) {
-                songFound = true;
-                break;
-            }
-        }
-
-
-        if (!songFound) {
-            qDebug() << "Song with code" << codeSong << "not found.";
-            return "Song not found.";
-        }
-
-        // Construct a string with song details
-        QString songDetails;
-        songDetails += "Code: " + QString::number(song.code) + "\n";
-        songDetails += "Nombre: " + song.nombre + "\n";
-        songDetails += "Cantante: " + song.cantante + "\n";
-        songDetails += "Genero: " + song.genero + "\n";
-        songDetails += "Precio: " + QString::number(song.precio) + "\n";
-        songDetails += "Estrellas: " + QString::number(song.estrellas) + "\n";
-        songDetails += "Reviews: " + QString::number(song.reviews) + "\n";
-
-
-        // Add downloads information to the string
-        descarga download;
-        QDataStream inDownloads(&downloadsFile);
-
-        int downloadCount=0;
-
-        songDetails += "Downloads:\n";
-        downloadsFile.seek(0);
-        while (!inDownloads.atEnd()) {
-            inDownloads >> download.codedown >> download.fecha >> download.codesong >> download.cliente >> download.precio ;
-
-            if (download.codesong == song.code) {
-                downloadCount++;
-                songDetails += "Código de descarga: " + QString::number(download.codedown) + "\n";
-                songDetails += "Fecha: " + download.fecha + "\n";
-                songDetails += "Cliente: " + download.cliente + "\n";
-                songDetails += "Precio: " + QString::number(download.precio) + "\n";
-               break;
-            }
-        }
-
-        songDetails += "Total de descargas para esta canción: " + QString::number(downloadCount) + "\n";
-
-        songsFile.close();
-        downloadsFile.close();
-
-        return songDetails.toStdString();
-    }
 
 
 
@@ -394,33 +279,99 @@ int rate = 0;
     songsFile.close();
 }
 
+string CTunes::infoSong(int codeSong) {
+
+    QFile songsFile("songs.itn");
+    QFile downloadsFile("downloads.itn");
+
+    if (!songsFile.open(QIODevice::ReadOnly) || !downloadsFile.open(QIODevice::ReadOnly)) {
+        return "Failed to open files.";
+    }
+
+    QDataStream inSongs(&songsFile);
+
+    bool songFound = false;
+    cancion song;
+    songsFile.seek(0);
+
+    while (!inSongs.atEnd()) {
+        inSongs >> song.code >> song.nombre >> song.cantante >> song.genero >> song.precio >> song.estrellas >> song.reviews;
+
+        if (song.code == codeSong) {
+            songFound = true;
+            break;
+        }
+    }
+
+
+    if (!songFound) {
+        qDebug() << "Song with code" << codeSong << "not found.";
+        return "Song not found.";
+    }
+
+    QString songDetails;
+    songDetails += "Code: " + QString::number(song.code) + "\n";
+    songDetails += "Nombre: " + song.nombre + "\n";
+    songDetails += "Cantante: " + song.cantante + "\n";
+    songDetails += "Genero: " + song.genero + "\n";
+    songDetails += "Precio: " + QString::number(song.precio) + "\n";
+    songDetails += "Estrellas: " + QString::number(song.estrellas) + "\n";
+    songDetails += "Reviews: " + QString::number(song.reviews) + "\n";
+
+    descarga download;
+    QDataStream inDownloads(&downloadsFile);
+
+    int downloadCount=0;
+
+    songDetails += "Downloads:\n";
+    downloadsFile.seek(0);
+    while (!inDownloads.atEnd()) {
+        inDownloads >> download.codedown >> download.fecha >> download.codesong >> download.cliente >> download.precio ;
+
+        if (download.codesong == song.code) {
+            downloadCount++;
+            songDetails += "Código de descarga: " + QString::number(download.codedown) + "\n";
+            songDetails += "Fecha: " + download.fecha + "\n";
+            songDetails += "Cliente: " + download.cliente + "\n";
+            songDetails += "Precio: " + QString::number(download.precio) + "\n";
+            break;
+        }
+    }
+
+    songDetails += "Total de descargas para esta canción: " + QString::number(downloadCount) + "\n";
+
+    songsFile.close();
+    downloadsFile.close();
+
+    return songDetails.toStdString();
+}
+
+
+
 string CTunes::songs(string txtFile) {
 
-
     QString direccion= "C:/Users/aleja/Documents/ITunes/songs/"+QString::fromStdString(txtFile)+".txt";
-    QFile archivotxt (direccion);
-    QTextStream escritura(&archivotxt);
-    archivotxt.open(QIODevice::ReadWrite);
-    archivotxt.resize(0);
+    QFile Filetxt (direccion);
+    QTextStream escritura(&Filetxt);
+    Filetxt.open(QIODevice::ReadWrite);
+    Filetxt.resize(0);
 
-    string info="";
+    string data="";
     QFile songsFile("songs.itn");
-    if (!songsFile.open(QIODevice::ReadOnly)) { // Abre el archivo en modo de lectura
+    if (!songsFile.open(QIODevice::ReadOnly)) {
         return "Failed to open songs file.";
     }
     QDataStream Songs(&songsFile);
-
     cancion Song;
-
     songsFile.seek(0);
 
     while(!songsFile.atEnd()){
         Songs>>Song.code>>Song.nombre>>Song.cantante>>Song.genero>>Song.precio>>Song.estrellas>>Song.reviews;
         escritura <<"CODIGO: "<< Song.code<<" - TITULO: " << Song.nombre <<" - CANTANTE: "<< Song.cantante <<" - PRECIO: "<< Song.precio <<" - RATING: "<< Song.reviews<<".\n" ;
-        info+="CODIGO:"+QString::number(Song.code).toStdString()+" - TITULO:" + Song.nombre.toStdString()+" - CANTANTE: "+ Song.cantante.toStdString() +" - PRECIO: "+QString::number(Song.precio).toStdString()  +" - RATING: "+QString::number(Song.reviews).toStdString() +".\n" ;
+        data+="CODIGO:"+QString::number(Song.code).toStdString()+" - TITULO:" + Song.nombre.toStdString()+" - CANTANTE: "+ Song.cantante.toStdString() +" - PRECIO: "+QString::number(Song.precio).toStdString()  +" - RATING: "+QString::number(Song.reviews).toStdString() +".\n" ;
     }
     songsFile.close();
-    return info;
+    return data;
 }
 
 

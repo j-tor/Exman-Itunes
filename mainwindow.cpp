@@ -123,7 +123,7 @@ void MainWindow::on_add_Button_2_clicked()
 {
 
     CTunes ctunes;
-
+try {
     int codigo = ctunes.getcodigo(0);
 
     QString codigoString = QString::number(codigo);
@@ -153,20 +153,26 @@ void MainWindow::on_add_Button_2_clicked()
     } else if (generoStdString == "RANCHERA") {
         generoEnum = Genero::RANCHERA;
     }
+
     double precio = ui->lineEdit_precio->text().toDouble();
     QString duracion = ui->lineEdit_duracion->text();
 
-
+    if (nombre.isEmpty() || cantante.isEmpty() || generoString.isEmpty() || precio == 0 || duracion.isEmpty()) {
+        throw std::runtime_error("Por favor, complete todos los campos.");
+    }
 
 
     ctunes.addSong(nombre.toStdString(), cantante.toStdString(), generoEnum, precio, duracion.toStdString());
 
     QMessageBox::information(this, "Éxito", "Canción agregada correctamente.");
-    ui->lineEdit_codigo->setText("");
     ui->lineEdit_nombre->setText("");
     ui->lineEdit_Artista->setText("");
     ui->lineEdit_precio->setText("");
     ui->lineEdit_duracion->setText("");
+
+} catch (std::exception& e) {
+    QMessageBox::warning(this, "Error", e.what());
+}
 
 }
 
@@ -209,16 +215,24 @@ void MainWindow::on_review_Botton_clicked()
 
 void MainWindow::on_dowload_Button_2_clicked()
 {
-
+    try {
     CTunes ctunes;
 
     int code = ui->lineEdit_code_dowload->text().toInt();
     string  cliente = ui->lineEdit_cliente_dowload->text().toStdString();
 
+    if (cliente.empty()) {
+        throw std::runtime_error("Por favor, ingrese el cliente o codigo.");
+    }
+
+
     string message = ctunes.downloadSong(code, cliente);
     QString clienteQString = QString::fromStdString(message);
 
     ui->dowload_text->setText(clienteQString);
+    } catch (std::exception& e) {
+        QMessageBox::warning(this, "Error", e.what());
+    }
 
 
 }
@@ -226,20 +240,35 @@ void MainWindow::on_dowload_Button_2_clicked()
 void MainWindow::on_infoSong_Button_clicked()
 {
     CTunes ctunes;
+    try {
     int code = ui->lineEdit_info_code->text().toInt();
+
+    if (code <= 0) {
+        throw std::runtime_error("Por favor, ingrese un código válido.");
+    }
     string message = ctunes.infoSong(code);
     QString clienteQString = QString::fromStdString(message);
     ui->textEdit_infoSong->setText(clienteQString);
+    } catch (std::exception& e) {
+        QMessageBox::warning(this, "Error", e.what());
+    }
 }
 
 
 void MainWindow::on_update_SButton_clicked()
 {
+    try {
     CTunes ctunes;
 
     QString filename = ui->lineEdit_songs->text();
+    if (filename.isEmpty()) {
+        throw std::runtime_error("Por favor, ingrese un nombre de archivo válido.");
+    }
     string message = ctunes.songs(filename.toStdString());
     ui->TextEdit_song->setPlainText(QString::fromStdString(message));
+    } catch (std::exception& e) {
+        QMessageBox::warning(this, "Error", e.what());
+    }
 
 }
 
