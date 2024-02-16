@@ -17,11 +17,13 @@ public:
     void addSong(string, string, Genero::Generos ,double,string);
     void reviewSong(int, int);
     string downloadSong(int , string );
-    void songs(string);
+    string songs(string);
     string infoSong(int);
     QFile codigosFile;
     QFile downloadsFile;
     QFile songsFile;
+
+
 
 };
 

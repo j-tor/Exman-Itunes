@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QString codigoString = QString::number(codigo);
     ui->lineEdit_codigo->setText(codigoString);
-    cout<< codigo;
+
 
 }
 
@@ -166,9 +166,8 @@ void MainWindow::on_review_Botton_clicked()
         return;
     }
 
-   // CTunes ctunes;
-
-    //ctunes.reviewSong(code, stars);
+    CTunes ctunes;
+    ctunes.reviewSong(code, stars);
     QMessageBox::information(this, "Éxito", "La canción ha sido calificada correctamente.");
 
 
@@ -186,8 +185,7 @@ void MainWindow::on_dowload_Button_2_clicked()
     int code = ui->lineEdit_code_dowload->text().toInt();
     string  cliente = ui->lineEdit_cliente_dowload->text().toStdString();
 
-
-    string message = ctunes.downloadSong(code, cliente); // Suponiendo que cliente es la variable que contiene el nombre del cliente
+    string message = ctunes.downloadSong(code, cliente);
     QString clienteQString = QString::fromStdString(message);
 
     ui->dowload_text->setText(clienteQString);
@@ -197,10 +195,9 @@ void MainWindow::on_dowload_Button_2_clicked()
 
 void MainWindow::on_infoSong_Button_clicked()
 {
-
     CTunes ctunes;
     int code = ui->lineEdit_info_code->text().toInt();
-    string message = ctunes.infoSong(code); // Suponiendo que cliente es la variable que contiene el nombre del cliente
+    string message = ctunes.infoSong(code);
     QString clienteQString = QString::fromStdString(message);
     ui->textEdit_infoSong->setText(clienteQString);
 }
